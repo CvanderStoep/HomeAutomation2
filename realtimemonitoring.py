@@ -50,17 +50,18 @@ if __name__ == '__main__':
             data_point.append(outside_weather(city))
 
         write_api.write(bucket=bucket, org=org, record=data_point)
-        print(datetime.now(), data_point)
+        print(datetime.now())
+        # print(datetime.now(), data_point)
 
         # get inside temperature data from the hue bridge
         data_point = hue_temp(bridge)
         write_api.write(bucket=bucket, org=org, record=data_point)
-        print(datetime.now(), data_point)
+        # print(datetime.now(), data_point)
 
         # get status of the lights from the hue
         data_point = hue_lights(bridge)
         write_api.write(bucket=bucket, org=org, record=data_point)
-        print(datetime.now(), data_point)
+        # print(datetime.now(), data_point)
 
         inverter_exporter.run()
 

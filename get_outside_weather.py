@@ -10,9 +10,9 @@ def outside_weather(city="Delft"):
     complete_url = web_url + city
     response = requests.get(complete_url)
     x = response.json()
-    print("========================")
-    print(json.dumps(x, indent=2))
-    print("========================")
+    # print("========================")
+    # print(json.dumps(x, indent=2))
+    # print("========================")
     y = x["main"]
     wind_speed = float(x["wind"]["speed"])
     wind_direction = (x["wind"]["deg"])
@@ -20,6 +20,7 @@ def outside_weather(city="Delft"):
     weather_type = x["weather"][0]["main"]
     humidity = (x["main"]["humidity"])
     pressure = x["main"]["pressure"]
+    print('city, Temp.: ', city, current_temperature)
 
     # data_point = [{'measurement': 'temperature',
     #                'tags': {'location': city},

@@ -55,12 +55,14 @@ class InfluxDBOutput(PluginLoader.Plugin):
                       ]
 
         write_api.write(bucket=bucket, org=org, record=data_point)
-        print(datetime.now(), data_point)
+        # print(datetime.now(), data_point)
 
         sys.stdout.write('Inverter ID: {0}\n'.format(msg.id))
 
         sys.stdout.write('E Today : {0:>5}   Total: {1:<5}\n'.format(msg.e_today, (
                 (((msg.e_today * 10) - (int(msg.e_today * 10))) / 10) + msg.e_total)))
+        sys.stdout.write('E Today : {}   Total2: {}\n'.format(msg.e_today,  msg.e_total))
+
         sys.stdout.write('H Total : {0:>5}   Temp : {1:<5}\n'.format(msg.h_total, msg.temp))
         sys.stdout.write('errorMsg: {0:>5}\n'.format(msg.errorMsg))
 

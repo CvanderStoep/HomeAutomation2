@@ -12,6 +12,7 @@ def hue_temp(bridge):
     print('Temperature Sensor[8] - second_floor: ', temp_sensor_second_floor)
     print('Temperature Sensor[17] - ground_floor: ', temp_sensor_ground_floor)
     print('Temperature Sensor[75] - first_floor: ', temp_sensor_first_floor)
+    print()
 
     # data_point = [{'measurement': 'hue_temperature',
     #                'tags': {'sensor': "ground_floor"},
