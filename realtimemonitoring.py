@@ -23,6 +23,7 @@ from initbridge import initbridge
 from get_hue_temp import hue_temp
 from get_hue_lights import hue_lights
 from get_outside_weather import outside_weather
+from get_meteo import outside_meteo
 from private_info import cities
 # from private_info import database_name
 # from private_info import computer_address
@@ -43,6 +44,7 @@ if __name__ == '__main__':
     # connect to hue bridge
     bridge = initbridge()
     print(bridge.username)
+    start_time = time.time()
     while True:
         # get outside weather data from the various cities using open weather site
         data_point = []
@@ -52,6 +54,17 @@ if __name__ == '__main__':
         write_api.write(bucket=bucket, org=org, record=data_point)
         print(datetime.now())
         # print(datetime.now(), data_point)
+
+        # get outside weather data from meteoserver for location Delft (every 24 hrs)
+        current_time = time.time()
+        if current_time - start_time >= 24*60*60:
+        # if True:
+            data_point = outside_meteo()
+            write_api.write(bucket=bucket, org=org, record=data_point)
+            start_time = current_time
+        else:
+            print('24 hrs not passed yet')
+
 
         # get inside temperature data from the hue bridge
         data_point = hue_temp(bridge)

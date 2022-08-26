@@ -6,6 +6,7 @@ COPY requirements.txt .
 COPY config.cfg .
 COPY *.py .
 COPY .python_hue .
+COPY meteo.json .
 
 RUN pip install --no-cache-dir -r requirements.txt
 

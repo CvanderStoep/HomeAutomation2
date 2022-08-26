@@ -10,4 +10,4 @@ docker-compose up
 git clone https://github.com/CvanderStoep/HomeAutomation2
 
 #start containers
-docker-compose up --build
+sudo docker-compose up --build

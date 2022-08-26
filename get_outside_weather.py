@@ -22,31 +22,6 @@ def outside_weather(city="Delft"):
     pressure = x["main"]["pressure"]
     print('city, Temp.: ', city, current_temperature)
 
-    # data_point = [{'measurement': 'temperature',
-    #                'tags': {'location': city},
-    #                'fields': {'temperature': current_temperature}
-    #                }] + \
-    #              [{'measurement': 'pressure',
-    #                'tags': {'location': city},
-    #                'fields': {'pressure': pressure}
-    #                }] + \
-    #              [{'measurement': 'humidity',
-    #                'tags': {'location': city},
-    #                'fields': {'humidity': humidity}
-    #                }] + \
-    #              [{'measurement': 'weather_type',
-    #                'tags': {'location': city},
-    #                'fields': {'weather_type': weather_type}
-    #                }] + \
-    #              [{'measurement': 'wind',
-    #                'tags': {'location': city},
-    #                'fields': {'direction': wind_direction}
-    #                }] + \
-    #              [{'measurement': 'wind',
-    #                'tags': {'location': city},
-    #                'fields': {'speed': wind_speed}
-    #                }]
-    # return current_temperature, wind_speed, weather_type, humidity, pressure, wind_direction
     data_point = [Point("temperature").tag("location", city).field("temperature", current_temperature),
                   Point("pressure").tag("location", city).field("pressure", pressure),
                   Point("humidity").tag("location", city).field("humidity", humidity),

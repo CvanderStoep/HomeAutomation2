@@ -12,5 +12,5 @@
 ### check file private_info.py for correct computer address
 
 ###start the Containers: docker compose up --build
-###op de RP: docker-compose up --build
+###op de RP: sudo docker-compose up --build
 
