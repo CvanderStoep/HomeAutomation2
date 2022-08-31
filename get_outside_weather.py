@@ -5,7 +5,6 @@ from influxdb_client import Point
 
 
 def outside_weather(city="Delft"):
-    # from private_info import complete_url  # combines api key and city for the temperature
     from private_info import web_url
     complete_url = web_url + city
     response = requests.get(complete_url)
