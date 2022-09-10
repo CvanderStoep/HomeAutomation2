@@ -23,6 +23,7 @@ from get_hue_temp import hue_temp
 from get_hue_lights import hue_lights
 from get_outside_weather import outside_weather
 from get_meteo import outside_meteo
+from get_buienradar import outside_buienradar
 from private_info import cities
 
 from InverterExport import InverterExport
@@ -32,32 +33,37 @@ write_api = client2.write_api(write_options=SYNCHRONOUS)
 
 inverter_exporter = InverterExport('config.cfg')  # connect to the solar inverter
 
-retention_policy_default = None  # the temperature readings are stored indefinitely
-retention_policy_one_week = "one-week"  # the light readings are stored one week
+# retention_policy_default = None  # the temperature readings are stored indefinitely
+# retention_policy_one_week = "one-week"  # the light readings are stored one week
 
 if __name__ == '__main__':
 
     # connect to hue bridge
     bridge = initbridge()
     print(bridge.username)
-    start_time = time.time()
+    start_time = None  # time.time() make sure this runs at the start of the program
     while True:
+        print(datetime.now())
+
         # get outside weather data from the various cities using open weather site
         data_point = []
         for city in cities:
             data_point.append(outside_weather(city))
 
         write_api.write(bucket=bucket, org=org, record=data_point)
-        print(datetime.now())
 
         # get outside weather data from meteoserver for location Delft (every 24 hrs)
         current_time = time.time()
-        if current_time - start_time >= 24*60*60:
+        if start_time is None or current_time - start_time >= 24 * 60 * 60:
             data_point = outside_meteo()
             write_api.write(bucket=bucket, org=org, record=data_point)
             start_time = current_time
         else:
             print('24 hrs not passed yet')
+
+        # get outside weather data from buienradar for location Delft
+        data_point = outside_buienradar()
+        write_api.write(bucket=bucket, org=org, record=data_point)
 
         # get inside temperature data from the hue bridge
         data_point = hue_temp(bridge)

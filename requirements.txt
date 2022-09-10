@@ -1,3 +1,6 @@
-requests
+requests~=2.24.0
 influxdb-client
-phue
+phue~=1.1
+
+six~=1.15.0
+buienradar~=1.0.5

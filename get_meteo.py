@@ -11,8 +11,8 @@ def outside_meteo(city="Delft"):
 
     wind_speed = float(y["windms"])
     regen_24 = float(y["regen_24"])
-    current_temperature = round(float(y["temp"]) ,2)
-    print(f'{city= }, {current_temperature= }, {wind_speed= }, {regen_24= }')
+    current_temperature = round(float(y["temp"]), 2)
+    print(f'meteo data: {city= }, {current_temperature= }, {wind_speed= }, {regen_24= }')
 
     data_point = [Point("rainfall").tag("location", city).field("rainfall_24hr", regen_24)]
 

@@ -1,4 +1,5 @@
-FROM python:3
+#FROM python:3
+FROM python:3.10.6
 # Below is executed to create the image
 WORKDIR /usr/src/app
 

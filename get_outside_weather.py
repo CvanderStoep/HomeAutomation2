@@ -19,7 +19,7 @@ def outside_weather(city="Delft"):
     weather_type = x["weather"][0]["main"]
     humidity = (x["main"]["humidity"])
     pressure = x["main"]["pressure"]
-    print('city, Temp.: ', city, current_temperature)
+    print(f'openweathermap data: {city= }, {current_temperature= }')
 
     data_point = [Point("temperature").tag("location", city).field("temperature", current_temperature),
                   Point("pressure").tag("location", city).field("pressure", pressure),
