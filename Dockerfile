@@ -6,6 +6,7 @@ WORKDIR /usr/src/app
 COPY requirements.txt .
 COPY config.cfg .
 COPY *.py .
+#COPY *.py ./  #raspberry
 COPY .python_hue .
 
 RUN pip install --no-cache-dir -r requirements.txt

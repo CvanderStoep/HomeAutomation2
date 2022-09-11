@@ -28,14 +28,22 @@ def outside_buienradar(city="Delft"):
     distance = result["distance"]
     pressure = result["data"]["pressure"]
     windspeed = result["data"]["windspeed"]
+    windforce = result["data"]["windforce"]
     windgust = result["data"]["windgust"]
     rainlasthour = result["data"]["rainlasthour"]
     stationname = result["data"]["stationname"]
+    temperature = result["data"]["temperature"]
+    humidity = result["data"]["humidity"]
+    rainlast24hour = result["data"]["rainlast24hour"]
     print(f'{stationname= }')
 
     print(f'buienradar data: {city= }, {pressure= }, {windspeed= }, {windgust= } {rainlasthour= }')
 
     data_point = [Point("buienradar").tag("location", city).field("rainlasthour", rainlasthour),
+                  Point("buienradar").tag("location", city).field("rainlast24hour", rainlast24hour),
+                  Point("buienradar").tag("location", city).field("temperature", temperature),
+                  Point("buienradar").tag("location", city).field("humidity", humidity),
+                  Point("buienradar").tag("location", city).field("windforce", windforce),
                   Point("buienradar").tag("location", city).field("windspeed", windspeed),
                   Point("buienradar").tag("location", city).field("windgust", windgust)
                   ]
