@@ -1,4 +1,4 @@
-""""Reads the old solar monthly data from an Excel sheet exported from the Solar website"""
+""""Reads the historic solar monthly data from an Excel sheet exported from the Solar website"""
 
 import requests
 import pandas as pd
