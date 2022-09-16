@@ -5,7 +5,8 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt .
 COPY config.cfg .
-COPY *.py .
+COPY *.py ./
+COPY *.xlsx ./
 #COPY *.py ./  #raspberry
 COPY .python_hue .
 

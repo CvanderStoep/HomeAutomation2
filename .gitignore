@@ -4,7 +4,9 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-.idea/
+.idea/**/HomeAutomation2.iml
+.idea/**/misc.xml
+
 
 # Confidential stuff
 .python_hue
