@@ -2,6 +2,7 @@ import requests
 import json
 
 from influxdb_client import Point
+from private_info import logging_file
 
 
 def outside_weather(city="Delft"):
@@ -19,7 +20,8 @@ def outside_weather(city="Delft"):
     weather_type = x["weather"][0]["main"]
     humidity = (x["main"]["humidity"])
     pressure = x["main"]["pressure"]
-    print(f'openweathermap data: {city= }, {current_temperature= }')
+    with open(logging_file, "a") as f:
+        print(f'openweathermap data: {city= }, {current_temperature= }', file=f)
 
     data_point = [Point("temperature").tag("location", city).field("temperature", current_temperature),
                   Point("pressure").tag("location", city).field("pressure", pressure),

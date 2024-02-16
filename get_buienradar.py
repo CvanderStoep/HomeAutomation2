@@ -6,6 +6,7 @@ import requests
 from influxdb_client import Point
 from buienradar.buienradar import (get_data, parse_data)
 from buienradar.constants import (CONTENT, RAINCONTENT, SUCCESS)
+from private_info import logging_file
 
 
 def outside_buienradar(city="Delft"):
@@ -16,6 +17,9 @@ def outside_buienradar(city="Delft"):
     # gps-coordinates for the weather data (location Delft)
     latitude = 52.0067
     longitude = 4.3556
+
+    # latitude = 52.1
+    # longitude = 5.1
 
     result = get_data(latitude=latitude,
                       longitude=longitude,
@@ -36,9 +40,9 @@ def outside_buienradar(city="Delft"):
     temperature = result["data"]["temperature"]
     humidity = result["data"]["humidity"]
     rainlast24hour = result["data"]["rainlast24hour"]
-    print(f'{stationname= }')
-
-    print(f'buienradar data: {city= }, {pressure= }, {windspeed= }, {windgust= }, {rainlasthour= }, {winddirection= }')
+    with open(logging_file, "a") as f:
+        print(f'{stationname= }', file=f)
+        print(f'buienradar data: {city= }, {pressure= }, {windspeed= }, {windgust= }, {rainlasthour= }, {winddirection= }', file=f)
 
     data_point = [Point("buienradar").tag("location", city).field("rainlasthour", rainlasthour),
                   Point("buienradar").tag("location", city).field("rainlast24hour", rainlast24hour),

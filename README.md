@@ -21,7 +21,7 @@
 * apt-get update -y
 * apt install docker.io -y && apt install docker-compose -y
 ##bring up docker
-* docker-compose up
+* docker-compose up --build
 ##clone files from github
 * git clone https://github.com/CvanderStoep/HomeAutomation2
 

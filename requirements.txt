@@ -4,5 +4,5 @@ phue~=1.1
 
 six~=1.15.0
 buienradar~=1.0.5
-pandas~=1.4.0
+pandas
 openpyxl

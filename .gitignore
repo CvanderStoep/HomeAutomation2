@@ -13,6 +13,8 @@
 docker-compose.yml
 private_info.py
 /Fam. van der Stoep-Maandelijkse statistieken-20220913.xlsx
+logging.txt
+
 
 # Virtual environment
 venv/
