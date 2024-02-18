@@ -30,13 +30,22 @@ from private_info import token, logging_file
 client2 = InfluxDBClient(url=DB_url, token=token)
 write_api = client2.write_api(write_options=SYNCHRONOUS)
 
-inverter_exporter = InverterExport('config.cfg')  # connect to the solar inverter
-
+try:
+    inverter_exporter = InverterExport('config.cfg')  # connect to the solar inverter
+except Exception as e:
+    with open(logging_file, "a") as f:
+        print(e, file=f)
 
 if __name__ == '__main__':
+    time_delay = 60 #seconds
 
     # connect to hue bridge
-    bridge = initbridge()
+    try:
+        bridge = initbridge()
+    except Exception as e:
+        with open(logging_file, "a") as f:
+            print(e, file=f)
+
     with open(logging_file, "a") as f:
         print(bridge.username, file=f)
     # start_time = None  # time.time() make sure this runs at the start of the program
@@ -47,9 +56,13 @@ if __name__ == '__main__':
 
         # get outside weather data from the various cities using open weather site
         data_point = []
-        for city in cities:
-            data_point.append(outside_weather(city))
-        write_api.write(bucket=bucket, org=org, record=data_point)
+        try:
+            for city in cities:
+                data_point.append(outside_weather(city))
+            write_api.write(bucket=bucket, org=org, record=data_point)
+        except Exception as e:
+            with open(logging_file, "a") as f:
+                print(e, file=f)
 
         try:
             data_point = outside_buienradar()
@@ -60,14 +73,26 @@ if __name__ == '__main__':
             pass
 
         # get inside temperature data from the hue bridge
-        data_point = hue_temp(bridge)
-        write_api.write(bucket=bucket, org=org, record=data_point)
+        try:
+            data_point = hue_temp(bridge)
+            write_api.write(bucket=bucket, org=org, record=data_point)
+        except Exception as e:
+            with open(logging_file, "a") as f:
+                print(e, file=f)
 
         # get status of the lights from the hue
-        data_point = hue_lights(bridge)
-        write_api.write(bucket=bucket, org=org, record=data_point)
+        try:
+            data_point = hue_lights(bridge)
+            write_api.write(bucket=bucket, org=org, record=data_point)
+        except Exception as e:
+            with open(logging_file, "a") as f:
+                print(e, file=f)
 
         # get data from the solar inverter
-        inverter_exporter.run()
+        try:
+            inverter_exporter.run()
+        except Exception as e:
+            with open(logging_file, "a") as f:
+                print(e, file=f)
 
-        time.sleep(60)  # sleep time in sec.
+        time.sleep(time_delay)  # sleep time in sec.
