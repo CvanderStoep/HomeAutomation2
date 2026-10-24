@@ -1,10 +1,34 @@
-requests #~=2.24.0
-influxdb-client
-phue~=1.1
+# requests #~=2.24.0
+# influxdb-client
+# phue~=1.1
 
 
-# six~=1.15.0
-six>=1.16.0
-buienradar~=1.0.5
-pandas
-openpyxl
+# # six~=1.15.0
+# six>=1.16.0
+# buienradar~=1.0.5
+# pandas
+# openpyxl
+
+
+
+buienradar==1.0.9
+certifi==2026.10.23
+charset-normalizer==3.5.2
+docopt==0.6.2
+et_xmlfile==2.0.0
+idna==3.20
+influxdb-client==1.50.0
+numpy==2.5.4
+openpyxl==3.1.5
+pandas==3.1.0
+phue==1.1
+python-dateutil==3.0.0
+pytz==2026.5
+reactivex==6.0.0
+requests==2.34.2
+six==1.17.0
+typing_extensions==4.16.0
+tzdata==2026.5
+urllib3==2.8.0
+vincenty==0.1.4
+xmltodict==1.0.4
