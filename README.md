@@ -13,7 +13,7 @@
 #### Realtime monitoring runs inside a Docker Container
 #### check file private_info.py for correct computer address
 
-####start the Containers: docker compose up --build
+####start the Containers: docker compose up --build -d
 ####op de RP: sudo docker-compose up --build
 
 
@@ -24,4 +24,6 @@
 * docker-compose up --build
 ##clone files from github
 * git clone https://github.com/CvanderStoep/HomeAutomation2
+
+# ha_network needs to exist on docker
 
