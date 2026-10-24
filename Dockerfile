@@ -1,10 +1,10 @@
-FROM python:3.10.6
+# FROM python:3.13.8  
+FROM python:3.14-slim
+# 3.10.6
 # Below is executed to create the image
 WORKDIR /usr/src/app
 
 COPY requirements.txt .
-#RUN command should come here  to minimize install time
-#RUN pip install --no-cache-dir -r requirements.txt
 
 COPY config.cfg .
 COPY *.py ./
