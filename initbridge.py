@@ -1,14 +1,11 @@
 from phue import Bridge
-import time
-import os
 
 
 def initbridge():
-    # global bridge
     from private_info import ip_address_hue_bridge
     bridge = Bridge(ip=ip_address_hue_bridge, config_file_path='./.python_hue')  # connected to Deco mesh
 
-    bridge.connect()  # this command is needed only once; press hue bridge button en run bridge.connect() command.
+    # Gebruikt de koppelgegevens uit .python_hue. Alleen de allereerste keer (zonder .python_hue)
+    # moet je eerst op de knop van de Hue bridge drukken.
+    bridge.connect()
     return bridge
-
-

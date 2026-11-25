@@ -9,34 +9,56 @@
 # Output is send to InfluxDB version 2!!
 # Output is visualized using InfluxDB and Grafana
 #
+# Instellingen (interval, Buienradar-locatie, Hue-sensoren) staan in config.cfg, sectie [monitoring].
+#
 # Logging gaat naar stdout (zichtbaar met `docker logs realtimemonitoring`).
 # Niveau instelbaar met de omgevingsvariabele LOG_LEVEL (DEBUG, INFO, WARNING, ERROR);
 # standaard INFO. Op DEBUG worden ook alle meetwaarden gelogd.
 #
 
+import configparser
 import logging
 import os
 import time
+from dataclasses import dataclass
+from functools import partial
 
-from influxdb_client import InfluxDBClient
-from influxdb_client.client.write_api import SYNCHRONOUS
-
+import InverterLib
+import influx_db
 from InverterExport import InverterExport
 from get_buienradar import outside_buienradar
 from get_hue_lights import hue_lights
 from get_hue_temp import hue_temp
 from get_outside_weather import outside_weather
 from initbridge import initbridge
-from private_info import DB_url
-from private_info import bucket
 from private_info import cities
-from private_info import org
-from private_info import token
+
+CONFIG_FILE = 'config.cfg'
 
 logger = logging.getLogger('realtimemonitoring')
 
-client2 = InfluxDBClient(url=DB_url, token=token)
-write_api = client2.write_api(write_options=SYNCHRONOUS)
+
+@dataclass
+class Settings:
+    interval: int
+    buienradar_city: str
+    buienradar_latitude: float
+    buienradar_longitude: float
+    hue_sensors: dict  # uniqueid -> locatie
+
+
+def load_settings(path=CONFIG_FILE):
+    config = configparser.ConfigParser(interpolation=None)
+    if not config.read(InverterLib.expand_path(path)):
+        raise FileNotFoundError(path)
+    monitoring = config['monitoring']
+    return Settings(
+        interval=monitoring.getint('interval', fallback=60),
+        buienradar_city=monitoring.get('buienradar_city', fallback='Delft'),
+        buienradar_latitude=monitoring.getfloat('buienradar_latitude'),
+        buienradar_longitude=monitoring.getfloat('buienradar_longitude'),
+        hue_sensors={uniqueid: location for location, uniqueid in config['hue_temperature_sensors'].items()},
+    )
 
 
 def setup_logging():
@@ -54,85 +76,83 @@ def log_error(source, e):
     logger.error('%s: %s: %s', source, type(e).__name__, e)
 
 
-if __name__ == '__main__':
-    setup_logging()
-    time_delay = 60 #seconds
+class Monitor:
+    """Eén meetronde: alle bronnen uitlezen en in één keer naar InfluxDB schrijven."""
 
-    # Hue bridge en inverter worden in de loop (opnieuw) verbonden zolang dat nog niet
-    # gelukt is, zodat een storing bij het opstarten de monitoring niet blokkeert.
-    bridge = None
-    inverter_exporter = None
+    def __init__(self, settings):
+        self.settings = settings
+        # Hue bridge en inverter worden (opnieuw) verbonden zolang dat nog niet gelukt is,
+        # zodat een storing bij het opstarten de monitoring niet blokkeert.
+        self.bridge = None
+        self.inverter_exporter = None
 
-    logger.info('Gestart, meetinterval %s s', time_delay)
-    while True:
-        failed = []
-
-        if bridge is None:
+    def connect(self, failed):
+        if self.bridge is None:
             try:
-                bridge = initbridge()  # connect to hue bridge
+                self.bridge = initbridge()  # connect to hue bridge
                 logger.info('Verbonden met Hue bridge')
             except Exception as e:
                 log_error('Hue bridge verbinden', e)
                 failed.append('Hue bridge')
 
-        if inverter_exporter is None:
+        if self.inverter_exporter is None:
             try:
-                inverter_exporter = InverterExport('config.cfg')  # connect to the solar inverter
+                self.inverter_exporter = InverterExport(CONFIG_FILE)  # connect to the solar inverter
             except Exception as e:
                 log_error('InverterExport starten', e)
                 failed.append('Inverter')
 
-        # get outside weather data from the various cities using open weather site
-        # (per stad, zodat één mislukte stad de andere niet tegenhoudt)
-        data_point = []
-        for city in cities:
+    def sources(self):
+        """Lijst van (naam, functie) die elk een lijst Points teruggeven."""
+        s = self.settings
+        sources = [(f'OpenWeatherMap {city}', partial(outside_weather, city)) for city in cities]
+        sources.append(('Buienradar', partial(outside_buienradar, s.buienradar_city,
+                                              s.buienradar_latitude, s.buienradar_longitude)))
+        if self.bridge is not None:
+            sources.append(('Hue temperatuur', partial(hue_temp, self.bridge, s.hue_sensors)))
+            sources.append(('Hue lampen', partial(hue_lights, self.bridge)))
+        return sources
+
+    def run_cycle(self):
+        failed = []
+        self.connect(failed)
+
+        # Elke bron apart, zodat één mislukte bron de andere niet tegenhoudt.
+        points = []
+        for name, read_source in self.sources():
             try:
-                data_point.extend(outside_weather(city))
+                points.extend(read_source())
             except Exception as e:
-                log_error(f'OpenWeatherMap {city}', e)
-                failed.append(f'OpenWeatherMap {city}')
-        try:
-            if data_point:
-                write_api.write(bucket=bucket, org=org, record=data_point)
-        except Exception as e:
-            log_error('OpenWeatherMap wegschrijven', e)
-            failed.append('OpenWeatherMap wegschrijven')
+                log_error(name, e)
+                failed.append(name)
 
-        try:
-            data_point = outside_buienradar()
-            write_api.write(bucket=bucket, org=org, record=data_point)
-        except Exception as e:
-            log_error('Buienradar', e)
-            failed.append('Buienradar')
-
-        if bridge is not None:
-            # get inside temperature data from the hue bridge
+        if points:
             try:
-                data_point = hue_temp(bridge)
-                write_api.write(bucket=bucket, org=org, record=data_point)
+                influx_db.write(points)
             except Exception as e:
-                log_error('Hue temperatuur', e)
-                failed.append('Hue temperatuur')
+                log_error('InfluxDB wegschrijven', e)
+                failed.append('InfluxDB wegschrijven')
 
-            # get status of the lights from the hue
+        # De inverter schrijft zelf weg via de InfluxDBOutput-plugin.
+        if self.inverter_exporter is not None:
             try:
-                data_point = hue_lights(bridge)
-                write_api.write(bucket=bucket, org=org, record=data_point)
-            except Exception as e:
-                log_error('Hue lampen', e)
-                failed.append('Hue lampen')
-
-        # get data from the solar inverter
-        if inverter_exporter is not None:
-            try:
-                inverter_exporter.run()
+                self.inverter_exporter.run()
             except Exception as e:
                 log_error('Inverter', e)
                 failed.append('Inverter')
 
         if failed:
-            logger.info('Meetronde klaar, mislukt: %s', ', '.join(failed))
+            logger.info('Meetronde klaar (%s punten), mislukt: %s', len(points), ', '.join(failed))
         else:
-            logger.info('Meetronde klaar')
+            logger.info('Meetronde klaar (%s punten)', len(points))
 
-        time.sleep(time_delay)  # sleep time in sec.
+
+if __name__ == '__main__':
+    setup_logging()
+    settings = load_settings()
+    monitor = Monitor(settings)
+
+    logger.info('Gestart, meetinterval %s s', settings.interval)
+    while True:
+        monitor.run_cycle()
+        time.sleep(settings.interval)

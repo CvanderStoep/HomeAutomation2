@@ -1,13 +1,6 @@
+import os
 import socket
 import struct
-import os
-import binascii
-import sys
-from importlib import reload
-
-if sys.version[0] == '2':
-    reload(sys)
-    sys.setdefaultencoding('cp437')
 
 def getNetworkIp():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -31,20 +24,17 @@ def createV4RequestFrame(logger_sn):
         str: Information request string for inverter
     """
     #frame = (headCode) + (dataFieldLength) + (contrlCode) + (sn) + (sn) + (command) + (checksum) + (endCode)
-    frame_hdr = binascii.unhexlify('680241b1') #from SolarMan / new Omnik app
-    command = binascii.unhexlify('0100')
-    defchk = binascii.unhexlify('87')
-    endCode = binascii.unhexlify('16')
+    frame_hdr = bytes.fromhex('680241b1') #from SolarMan / new Omnik app
+    command = bytes.fromhex('0100')
+    defchk = bytes.fromhex('87')  # plaatshouder, wordt hieronder door de checksum vervangen
+    endCode = bytes.fromhex('16')
 
-    tar = bytearray.fromhex(hex(logger_sn)[8:10] + hex(logger_sn)[6:8] + hex(logger_sn)[4:6] + hex(logger_sn)[2:4])
-    frame = bytearray(frame_hdr + tar + tar + command + defchk + endCode)
+    sn = struct.pack('<I', logger_sn)  # serienummer als 4 bytes, little-endian (omgekeerde volgorde)
+    frame = bytearray(frame_hdr + sn + sn + command + defchk + endCode)
 
-    checksum = 0
-    frame_bytes = bytearray(frame)
-    for i in range(1, len(frame_bytes) - 2, 1):
-        checksum += frame_bytes[i] & 255
-    frame_bytes[len(frame_bytes) - 2] = int((checksum & 255))
-    return bytearray(frame_bytes)
+    # checksum = som van alle bytes behalve de eerste en de laatste twee, modulo 256
+    frame[-2] = sum(frame[1:-2]) & 0xFF
+    return frame
 
 def expand_path(path):
     """
@@ -87,7 +77,7 @@ def getLoggers():
             else:
                 if (data == SendData): continue #skip sent data
                 a = data.decode('ascii', errors='replace').split(',')
-                wifi_ip, wifi_mac, wifi_sn = a[0],a[1],a[2]
+                wifi_ip, wifi_sn = a[0], a[2]  # antwoord: ip,mac,serienummer
                 if (len(gateways)>1):
                     gateways = gateways+','
                 gateways = gateways+wifi_ip+','+wifi_sn

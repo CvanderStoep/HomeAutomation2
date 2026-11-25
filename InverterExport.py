@@ -3,20 +3,15 @@
 
 Get data from a Wi-Fi kit logger and save/send the data to the defined plugin(s)
 """
-import socket  # Needed for talking to logger
-import sys
+import argparse
+import configparser
 import logging
 import logging.config
+import re
+import socket  # Needed for talking to logger
 import sys
 import time
 
-if sys.version[:1] == '2':
-    import ConfigParser as configparser
-else:
-    import configparser
-import optparse
-import os
-import re
 from PluginLoader import Plugin
 import InverterMsg  # Import the Msg handler
 import InverterLib  # Import the library
@@ -41,12 +36,12 @@ class InverterExport(object):
         self.config.read(config_files)
 
         # add command line option -p / --plugins to override the output plugins used
-        parser = optparse.OptionParser()
-        parser.add_option('-p', '--plugins',
-                          action="store", dest="plugins",
-                          help="output plugins to use")
+        # (parse_known_args: onbekende argumenten van het aanroepende programma negeren)
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-p', '--plugins', dest="plugins",
+                            help="output plugins to use")
 
-        self.options, self.args = parser.parse_args()
+        self.options, self.args = parser.parse_known_args()
 
         # Eenmalige setup (logger en output-plugins); hoeft niet elke uitleesronde opnieuw.
         self.build_logger(self.config)

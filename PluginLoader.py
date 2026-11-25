@@ -1,6 +1,4 @@
 # from https://gist.github.com/will-hart/5899567
-# Needs six module, run: pip install six
-from six import add_metaclass
 
 
 class PluginMount(type):
@@ -12,7 +10,7 @@ class PluginMount(type):
 
     def __init__(cls, name, bases, attrs):
         """Called when a Plugin derived class is imported"""
-        super(PluginMount, cls).__init__(name)
+        super().__init__(name, bases, attrs)
 
         if not hasattr(cls, 'plugins'):
             # Called when the metaclass is first instantiated
@@ -32,8 +30,7 @@ class PluginMount(type):
         cls.plugins.append(instance)
 
 
-@add_metaclass(PluginMount)
-class Plugin(object):
+class Plugin(metaclass=PluginMount):
     """A plugin which must provide a process_message() method"""
 
     config = None
