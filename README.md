@@ -14,11 +14,13 @@ Everything runs in Docker containers on a Raspberry Pi.
 The main loop is `realtimemonitoring.py`.
 
 ## Configuration
-* `config.cfg` – non-secret settings: measurement interval, Buienradar location,
-  Hue sensor IDs (section `[monitoring]` / `[hue_temperature_sensors]`) and the inverter settings.
-* Private files (not in git): `.env`, `private_info.py`, `.python_hue`, `docker-compose.yml`.
+* `config.cfg` – non-secret settings: measurement interval, OpenWeatherMap cities, Buienradar location,
+  solar location tag, Hue sensor IDs (section `[monitoring]` / `[hue_temperature_sensors]`) and the inverter settings.
+* Private files (not in git): `.env`, `.python_hue`, `docker-compose.yml`.
   They are copied to the Pi with `deploy-private-files.command`.
-  `private_info.py` and `.python_hue` are mounted into the container, not baked into the image.
+* Secrets (InfluxDB token, OpenWeatherMap API key, Hue bridge IP) live in `.env`;
+  docker-compose passes them to the container as environment variables (see `env_config.py`).
+  `.python_hue` is mounted into the container, not baked into the image.
 
 ## Logging
 Logs go to stdout: `sudo docker logs -f realtimemonitoring`.

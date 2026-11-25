@@ -3,9 +3,12 @@
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-from private_info import DB_url, bucket, org, token
+import env_config
 
-client = InfluxDBClient(url=DB_url, token=token)
+bucket = env_config.influxdb_bucket()
+org = env_config.influxdb_org()
+
+client = InfluxDBClient(url=env_config.influxdb_url(), token=env_config.influxdb_token())
 _write_api = client.write_api(write_options=SYNCHRONOUS)
 
 

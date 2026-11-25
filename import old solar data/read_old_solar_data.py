@@ -1,17 +1,22 @@
 """"Reads the historic solar monthly data from an Excel sheet exported from the Solar website"""
 
-import requests
-import pandas as pd
+import os
+import sys
 from datetime import datetime
 
+import pandas as pd
 from influxdb_client import Point
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
-from private_info import token
-from private_info import org
-from private_info import bucket
-from private_info import DB_url
 
+# env_config staat in de projectmap (een niveau hoger); secrets komen uit .env / omgevingsvariabelen
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import env_config  # noqa: E402
+
+token = env_config.influxdb_token()
+org = env_config.influxdb_org()
+bucket = env_config.influxdb_bucket()
+DB_url = env_config.influxdb_url()
 
 client2 = InfluxDBClient(url=DB_url, token=token)
 write_api = client2.write_api(write_options=SYNCHRONOUS)

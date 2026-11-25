@@ -11,7 +11,7 @@ COPY requirements.txt .
 
 COPY config.cfg .
 COPY *.py ./
-# private_info.py en .python_hue worden via docker-compose gemount (zie .dockerignore)
+# Secrets komen als omgevingsvariabelen uit .env; .python_hue wordt via docker-compose gemount
 
 RUN pip install --no-cache-dir -r requirements.txt
 

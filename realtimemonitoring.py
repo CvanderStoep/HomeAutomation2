@@ -31,7 +31,6 @@ from get_hue_lights import hue_lights
 from get_hue_temp import hue_temp
 from get_outside_weather import outside_weather
 from initbridge import initbridge
-from private_info import cities
 
 CONFIG_FILE = 'config.cfg'
 
@@ -41,6 +40,7 @@ logger = logging.getLogger('realtimemonitoring')
 @dataclass
 class Settings:
     interval: int
+    cities: list
     buienradar_city: str
     buienradar_latitude: float
     buienradar_longitude: float
@@ -54,6 +54,7 @@ def load_settings(path=CONFIG_FILE):
     monitoring = config['monitoring']
     return Settings(
         interval=monitoring.getint('interval', fallback=60),
+        cities=[c.strip() for c in monitoring.get('cities', fallback='').splitlines() if c.strip()],
         buienradar_city=monitoring.get('buienradar_city', fallback='Delft'),
         buienradar_latitude=monitoring.getfloat('buienradar_latitude'),
         buienradar_longitude=monitoring.getfloat('buienradar_longitude'),
@@ -105,7 +106,7 @@ class Monitor:
     def sources(self):
         """Lijst van (naam, functie) die elk een lijst Points teruggeven."""
         s = self.settings
-        sources = [(f'OpenWeatherMap {city}', partial(outside_weather, city)) for city in cities]
+        sources = [(f'OpenWeatherMap {city}', partial(outside_weather, city)) for city in s.cities]
         sources.append(('Buienradar', partial(outside_buienradar, s.buienradar_city,
                                               s.buienradar_latitude, s.buienradar_longitude)))
         if self.bridge is not None:

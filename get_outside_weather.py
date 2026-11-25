@@ -4,17 +4,20 @@ import requests
 
 from influxdb_client import Point
 
+import env_config
+
 logger = logging.getLogger(__name__)
+
+API_URL = 'https://api.openweathermap.org/data/2.5/weather'
 
 
 def outside_weather(city="Delft"):
-    from private_info import web_url
-    complete_url = web_url + city
+    params = {'appid': env_config.openweathermap_api_key(), 'q': city}
     # De URL bevat de API-key. Foutmeldingen van requests tonen de volledige URL,
     # dus die worden vervangen door een melding zonder URL (komt anders in de logs).
     try:
         # timeout voorkomt dat de hele meetloop blijft hangen als de API niet reageert
-        response = requests.get(complete_url, timeout=10)
+        response = requests.get(API_URL, params=params, timeout=10)
         response.raise_for_status()
     except requests.HTTPError as e:
         raise RuntimeError(f'HTTP {e.response.status_code} {e.response.reason}') from None

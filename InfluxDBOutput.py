@@ -5,8 +5,6 @@ import influx_db
 
 from influxdb_client import Point
 
-from private_info import city
-
 # Eigen logger voor de meetwaarden (DEBUG); self.logger is de InverterLogger uit config.cfg.
 detail_logger = logging.getLogger(__name__)
 
@@ -46,7 +44,8 @@ class InfluxDBOutput(PluginLoader.Plugin):
             return
 
         e_total = e_total_precise(msg)
-        data_point = [Point("solarpanel").tag("location", city).field("power", msg.p_ac(1)),
+        city = self.config.get('monitoring', 'solar_location', fallback='Delfgauw')
+        data_point =[Point("solarpanel").tag("location", city).field("power", msg.p_ac(1)),
                       Point("solarpanel").tag("location", city).field("Temp", msg.temp),
                       Point("solarpanel").tag("location", city).field("power today", msg.e_today),
                       Point("solarpanel").tag("location", city).field("power total", e_total)
