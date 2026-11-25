@@ -127,48 +127,64 @@ class InverterExport(object):
                 hex(ord(chr(x)))[2:].zfill(2) for x in bytearray(data)) + '  ' + re.sub('[^\x20-\x7f]', '', ''.join(
                 chr(x) for x in bytearray(data))))
 
-            okflag = False
-            while (not okflag):
+            # Per uitleesronde wordt maximaal één meetbericht verwerkt. Extra pakketten
+            # die de logger daarna nog stuurt, worden alleen gelogd (met ruwe bytes),
+            # niet weggeschreven: die gaven nep-pieken in InfluxDB.
+            measured = False
+            try:
+                while True:
+                    try:
+                        data = logger_socket.recv(1024)
+                    except socket.timeout:
+                        if not measured:
+                            self.logger.error(
+                                'Timeout connecting to logger with IP: {0} and SN {1}, trying next logger.'.format(ip, sn))
+                        break
 
-                try:
-                    data = logger_socket.recv(1024)
-                except socket.timeout as e:
-                    self.logger.error(
-                        'Timeout connecting to logger with IP: {0} and SN {1}, trying next logger.'.format(ip, sn))
-                    okflag = True
-                    continue
+                    if not data:  # logger heeft de verbinding gesloten
+                        break
 
-                # dump raw data to log
-                self.logger.debug('RAW received Packet (len={0}): '.format(len(data)) + ':'.join(
-                    hex(ord(chr(x)))[2:].zfill(2) for x in bytearray(data)) + '  ' + re.sub('[^\x20-\x7f]', '', ''.join(
-                    chr(x) for x in bytearray(data))))
+                    # dump raw data to log
+                    self.logger.debug('RAW received Packet (len={0}): '.format(len(data)) + ':'.join(
+                        hex(ord(chr(x)))[2:].zfill(2) for x in bytearray(data)) + '  ' + re.sub('[^\x20-\x7f]', '', ''.join(
+                        chr(x) for x in bytearray(data))))
 
-                msg = InverterMsg.InverterMsg(data)
+                    msg = InverterMsg.InverterMsg(data)
 
-                # log DATA length
-                self.logger.debug('DATA len={0}: '.format(msg.len))
+                    if len(data) > 12:
+                        # log DATA length
+                        self.logger.debug('DATA len={0}: '.format(msg.len))
 
-                if (msg.msg)[:9] == 'DATA SEND':
-                    self.logger.debug("Exit Status: {0}".format(msg.msg))
-                    logger_socket.close()
-                    okflag = True
-                    continue
+                        if (msg.msg)[:9] == 'DATA SEND':
+                            self.logger.debug("Exit Status: {0}".format(msg.msg))
+                            break
 
-                if (msg.msg)[:11] == 'NO INVERTER':
-                    self.logger.debug("Inverter(s) are in sleep mode: {0} received".format(msg.msg))
-                    logger_socket.close()
-                    okflag = True
-                    continue
+                        if (msg.msg)[:11] == 'NO INVERTER':
+                            self.logger.debug("Inverter(s) are in sleep mode: {0} received".format(msg.msg))
+                            break
 
-                self.logger.info("Inverter ID: {0}".format(msg.id))
-                if (msg.len > 140):
-                    self.logger.info("Inverter main firmware version: {0}".format(msg.main_fwver))
-                    self.logger.info("Inverter slave firmware version: {0}".format(msg.slave_fwver))
-                self.logger.info("RUN State: {0}".format(msg.run_state))
+                    if measured or not self.looks_like_measurement(data):
+                        self.logger.warning('Extra/onbekend pakket genegeerd (len={0}): {1}'.format(
+                            len(data), data.hex(':')))
+                        continue
 
-                for plugin in Plugin.plugins:
-                    self.logger.debug('Run plugin' + plugin.__class__.__name__)
-                    plugin.process_message(msg)
+                    self.logger.info("Inverter ID: {0}".format(msg.id))
+                    if (msg.len > 140):
+                        self.logger.info("Inverter main firmware version: {0}".format(msg.main_fwver))
+                        self.logger.info("Inverter slave firmware version: {0}".format(msg.slave_fwver))
+                    self.logger.info("RUN State: {0}".format(msg.run_state))
+
+                    for plugin in Plugin.plugins:
+                        self.logger.debug('Run plugin' + plugin.__class__.__name__)
+                        plugin.process_message(msg)
+                    measured = True
+            finally:
+                logger_socket.close()
+
+    @staticmethod
+    def looks_like_measurement(data):
+        """Een meetbericht moet lang genoeg zijn voor alle velden (errorMsg staat op offset 93..96)."""
+        return len(data) >= 97
 
     def build_logger(self, config):
         # Build logger

@@ -19,7 +19,26 @@ write_api = client2.write_api(write_options=SYNCHRONOUS)
 class InfluxDBOutput(PluginLoader.Plugin):
     """Outputs the data from the inverter logger to InfluxDB"""
 
+    # Grenzen voor onmogelijke waarden. Echte pieken van de panelen gaan tot ca. 2100 W.
+    MAX_POWER = 3000     # W
+    MAX_E_TODAY = 30     # kWh
+    TEMP_RANGE = (-40, 100)  # °C
+
+    def is_plausible(self, msg):
+        p_ac, e_today, temp = msg.p_ac(1), msg.e_today, msg.temp
+        ok = (0 <= p_ac <= self.MAX_POWER
+              and 0 <= e_today <= self.MAX_E_TODAY
+              and self.TEMP_RANGE[0] <= temp <= self.TEMP_RANGE[1])
+        if not ok:
+            self.logger.warning(
+                'Onmogelijke waarden, niet weggeschreven: p_ac={0} e_today={1} temp={2} raw (len={3}): {4}'.format(
+                    p_ac, e_today, temp, len(msg.raw_msg), bytes(msg.raw_msg).hex(':')))
+        return ok
+
     def process_message(self, msg):
+        if not self.is_plausible(msg):
+            return
+
         data_point = [Point("solarpanel").tag("location", city).field("power",msg.p_ac(1)),
                       Point("solarpanel").tag("location", city).field("Temp", msg.temp),
                       Point("solarpanel").tag("location", city).field("power today", msg.e_today),
