@@ -1,6 +1,7 @@
-# Secrets: nooit in de image. Worden via docker-compose als volume gemount.
+# Secrets: nooit in de image (komen via .env / volume-mounts van docker-compose).
 .env
 private_info.py
+priveinfo_old.py
 .python_hue
 docker-compose.yml
 deploy-private-files.command
