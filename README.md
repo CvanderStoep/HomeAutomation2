@@ -11,8 +11,6 @@
 #### Output is send to InfluxDB (inside a Docker Container)
 #### Output is visualized using Grafana (inside a Docker Container)
 #### Realtime monitoring runs inside a Docker Container
-#### check file private_info.py for correct computer address
-
 ####start the Containers: docker compose up --build -d
 ####op de RP: sudo docker-compose up --build
 
@@ -21,9 +19,11 @@
 * apt-get update -y
 * apt install docker.io -y && apt install docker-compose -y
 ##bring up docker
-* docker-compose up --build
+* sudo docker compose up --build
 ##clone files from github
 * git clone https://github.com/CvanderStoep/HomeAutomation2
 
-# ha_network needs to exist on docker
+deploy-private-files.command
 
+# ha_network needs to exist on docker
+docker network create ha_network
