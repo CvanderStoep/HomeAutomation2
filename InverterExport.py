@@ -48,12 +48,12 @@ class InverterExport(object):
 
         self.options, self.args = parser.parse_args()
 
-    def run(self):
-        """Get information from inverter and store is configured outputs."""
-
+        # Eenmalige setup (logger en output-plugins); hoeft niet elke uitleesronde opnieuw.
         self.build_logger(self.config)
+        self.load_plugins()
 
-        # Load output plugins
+    def load_plugins(self):
+        """Load the configured output plugins."""
         # Prepare path for plugin loading
         sys.path.append(InverterLib.expand_path('outputs'))
 
@@ -71,6 +71,9 @@ class InverterExport(object):
             plugin_name = plugin_name.strip()
             self.logger.debug('Importing output plugin ' + plugin_name)
             __import__(plugin_name)
+
+    def run(self):
+        """Get information from inverter and store is configured outputs."""
 
         # Connect to logger
         if not self.config.has_option('logger', 'gateways'):

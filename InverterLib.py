@@ -72,12 +72,12 @@ def getLoggers():
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    SendData = "WIFIKIT-214028-READ" # Lotto/TM = "AT+YZAPP=214028,READ"
+    SendData = b"WIFIKIT-214028-READ" # Lotto/TM = b"AT+YZAPP=214028,READ"
 
     gateways = ''
     try:
         # Send data to the broadcast address
-        sent = sock.sendto(SendData, ('<broadcast>', 48899))
+        sock.sendto(SendData, ('<broadcast>', 48899))
         # Look for responses from all recipients
         while True:
             try:
@@ -86,12 +86,11 @@ def getLoggers():
                 break
             else:
                 if (data == SendData): continue #skip sent data
-                a = data.split(',')
+                a = data.decode('ascii', errors='replace').split(',')
                 wifi_ip, wifi_mac, wifi_sn = a[0],a[1],a[2]
                 if (len(gateways)>1):
                     gateways = gateways+','
                 gateways = gateways+wifi_ip+','+wifi_sn
-
     finally:
         sock.close()
-        return gateways
+    return gateways

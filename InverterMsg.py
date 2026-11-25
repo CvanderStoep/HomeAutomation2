@@ -19,7 +19,7 @@ offset = {
 13: 75, #h_total(75)
 14: 79, #run_state(79)
 15: 81, #GVFaultValue(81)
-16: 83, #GVFaultValue(83)
+16: 83, #GFFaultValue(83)
 17: 85, #GZFaultValue(85)
 18: 87, #TmpFaultValue(87)
 19: 89, #PVFaultValue(89)
@@ -143,7 +143,7 @@ class InverterMsg(object):
         return self.__get_short(offset[15], 10)  # Divide by 10
 
     @property
-    def GVFaultValue(self):
+    def GFFaultValue(self):
         """Grid frequency fault value in Hz"""
         return self.__get_short(offset[16], 100)  # Divide by 100
 

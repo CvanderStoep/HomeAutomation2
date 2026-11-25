@@ -8,7 +8,9 @@ from private_info import logging_file
 def outside_weather(city="Delft"):
     from private_info import web_url
     complete_url = web_url + city
-    response = requests.get(complete_url)
+    # timeout voorkomt dat de hele meetloop blijft hangen als de API niet reageert
+    response = requests.get(complete_url, timeout=10)
+    response.raise_for_status()
     x = response.json()
     # print("========================")
     # print(json.dumps(x, indent=2))

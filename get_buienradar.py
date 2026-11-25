@@ -1,34 +1,32 @@
 """"https://pypi.org/project/buienradar/"""
 
 
-import requests
-
 from influxdb_client import Point
 from buienradar.buienradar import (get_data, parse_data)
-from buienradar.constants import (CONTENT, RAINCONTENT, SUCCESS)
+from buienradar.constants import (CONTENT, MESSAGE, RAINCONTENT, SUCCESS)
 from private_info import logging_file
 
 
-def outside_buienradar(city="Delft"):
+def outside_buienradar(city="Delft", latitude=52.0067, longitude=4.3556):
+    """Haal het actuele weer op bij het dichtstbijzijnde Buienradar-station.
+
+    De standaardcoördinaten zijn die van Delft; geef bij een andere stad ook
+    latitude/longitude mee, anders klopt de 'location'-tag niet met de data.
+    """
     # minutes to look ahead for precipitation forecast
     # (5..120)
     timeframe = 45
 
-    # gps-coordinates for the weather data (location Delft)
-    latitude = 52.0067
-    longitude = 4.3556
-
-    # latitude = 52.1
-    # longitude = 5.1
-
     result = get_data(latitude=latitude,
                       longitude=longitude,
                       )
+    if not result.get(SUCCESS):
+        raise RuntimeError(f"Buienradar ophalen mislukt: {result.get(MESSAGE)}")
 
-    if result.get(SUCCESS):
-        data = result[CONTENT]
-        raindata = result[RAINCONTENT]
-        result = parse_data(data, raindata, latitude, longitude, timeframe)
+    result = parse_data(result[CONTENT], result[RAINCONTENT], latitude, longitude, timeframe)
+    if not result.get(SUCCESS):
+        raise RuntimeError(f"Buienradar data verwerken mislukt: {result.get(MESSAGE)}")
+
     distance = result["distance"]
     pressure = result["data"]["pressure"]
     windspeed = result["data"]["windspeed"]
@@ -41,7 +39,7 @@ def outside_buienradar(city="Delft"):
     humidity = result["data"]["humidity"]
     rainlast24hour = result["data"]["rainlast24hour"]
     with open(logging_file, "a") as f:
-        print(f'{stationname= }', file=f)
+        print(f'{stationname= }, {distance= }', file=f)
         print(f'buienradar data: {city= }, {pressure= }, {windspeed= }, {windgust= }, {rainlasthour= }, {winddirection= }', file=f)
 
     data_point = [Point("buienradar").tag("location", city).field("rainlasthour", rainlasthour),
@@ -57,4 +55,4 @@ def outside_buienradar(city="Delft"):
 
 
 if __name__ == '__main__':
-    outside_buienradar()
+    print(outside_buienradar())
