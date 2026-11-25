@@ -1,5 +1,8 @@
+import logging
+
 from influxdb_client import Point
-from private_info import logging_file
+
+logger = logging.getLogger(__name__)
 
 # Sensoren op basis van hun uniqueid (hardware-adres). Die blijft gelijk als een sensor
 # opnieuw wordt gekoppeld, in tegenstelling tot het sensor-ID op de bridge.
@@ -24,13 +27,10 @@ def hue_temp(bridge):
     # Een ontbrekende sensor (bijv. lege batterij) wordt gelogd; de andere worden wel weggeschreven.
     missing = set(TEMP_SENSORS.values()) - set(temperatures)
 
-    with open(logging_file, "a") as f:
-        print(file=f)
-        if missing:
-            print(f"Hue temperatuursensor(en) niet gevonden: {', '.join(sorted(missing))}", file=f)
-        for location, (sensor_id, temperature) in temperatures.items():
-            print(f'Temperature Sensor[{sensor_id}] - {location}: ', temperature, file=f)
-        print(file=f)
+    if missing:
+        logger.warning('Hue temperatuursensor(en) niet gevonden: %s', ', '.join(sorted(missing)))
+    for location, (sensor_id, temperature) in temperatures.items():
+        logger.debug('Temperature Sensor[%s] - %s: %s', sensor_id, location, temperature)
 
     data_point = [Point("hue_temperature").tag("sensor", location).field("temperature", temperature)
                   for location, (sensor_id, temperature) in temperatures.items()]

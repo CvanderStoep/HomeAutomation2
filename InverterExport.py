@@ -201,6 +201,8 @@ class InverterExport(object):
         log_levels = dict(notset=0, debug=10, info=20, warning=30, error=40, critical=50)
         log_dict = {
             'version': 1,
+            # Laat loggers van de andere modules (realtimemonitoring, get_*) intact.
+            'disable_existing_loggers': False,
             'formatters': {
                 'f': {'format': '%(asctime)s %(levelname)s %(message)s'}
             },
@@ -219,7 +221,9 @@ class InverterExport(object):
             'loggers': {
                 'InverterLogger': {
                     'handlers': config.get('log', 'type').split(','),
-                    'level': log_levels[config.get('log', 'level')]
+                    'level': log_levels[config.get('log', 'level')],
+                    # Heeft eigen handlers; niet ook nog via de root-logger (dubbele regels).
+                    'propagate': False,
                 }
             }
         }

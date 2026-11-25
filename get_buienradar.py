@@ -1,10 +1,13 @@
 """"https://pypi.org/project/buienradar/"""
 
 
+import logging
+
 from influxdb_client import Point
 from buienradar.buienradar import (get_data, parse_data)
 from buienradar.constants import (CONTENT, MESSAGE, RAINCONTENT, SUCCESS)
-from private_info import logging_file
+
+logger = logging.getLogger(__name__)
 
 
 def outside_buienradar(city="Delft", latitude=52.0067, longitude=4.3556):
@@ -38,9 +41,9 @@ def outside_buienradar(city="Delft", latitude=52.0067, longitude=4.3556):
     temperature = result["data"]["temperature"]
     humidity = result["data"]["humidity"]
     rainlast24hour = result["data"]["rainlast24hour"]
-    with open(logging_file, "a") as f:
-        print(f'{stationname= }, {distance= }', file=f)
-        print(f'buienradar data: {city= }, {pressure= }, {windspeed= }, {windgust= }, {rainlasthour= }, {winddirection= }', file=f)
+    logger.debug('buienradar station: %s, distance=%s', stationname, distance)
+    logger.debug('buienradar data: city=%s, pressure=%s, windspeed=%s, windgust=%s, rainlasthour=%s, winddirection=%s',
+                 city, pressure, windspeed, windgust, rainlasthour, winddirection)
 
     data_point = [Point("buienradar").tag("location", city).field("rainlasthour", rainlasthour),
                   Point("buienradar").tag("location", city).field("rainlast24hour", rainlast24hour),

@@ -4,6 +4,9 @@ FROM python:3.14-slim
 # Below is executed to create the image
 WORKDIR /usr/src/app
 
+# Logregels direct doorgeven aan `docker logs` (niet bufferen)
+ENV PYTHONUNBUFFERED=1
+
 COPY requirements.txt .
 
 COPY config.cfg .

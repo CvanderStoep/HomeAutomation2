@@ -1,5 +1,6 @@
+import logging
+
 import PluginLoader
-import sys
 
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -9,7 +10,9 @@ from private_info import token
 from private_info import org
 from private_info import bucket
 from private_info import DB_url
-from private_info import logging_file
+
+# Eigen logger voor de meetwaarden (DEBUG); self.logger is de InverterLogger uit config.cfg.
+detail_logger = logging.getLogger(__name__)
 
 
 client2 = InfluxDBClient(url=DB_url, token=token)
@@ -47,17 +50,17 @@ class InfluxDBOutput(PluginLoader.Plugin):
                       ]
 
         write_api.write(bucket=bucket, org=org, record=data_point)
-        with open(logging_file, "a") as f:
-            print(f'Inverter ID: {msg.id}', file=f)
-            print(f'E Today : {msg.e_today}  Total: {((((msg.e_today * 10) - (int(msg.e_today * 10))) / 10) + msg.e_total)}', file=f)
-            print(f'H Total : {msg.h_total}   Temp : {msg.temp}', file=f)
-            print(f'errorMsg: {msg.errorMsg}', file=f)
-            print(f'PV1   V: {msg.v_pv(1)}   I: {msg.i_pv(1)}', file=f)
-            print(f'PV2   V: {msg.v_pv(2)}   I: {msg.i_pv(2)}', file=f)
-            print(f'PV3   V: {msg.v_pv(3)}   I: {msg.i_pv(3)}', file=f)
-            print(f'L1    P: {msg.p_ac(1)}   V: {msg.v_ac(1)}   I: {msg.i_ac(1)}   F: {msg.f_ac(1)}', file=f)
-            print(f'L2    P: {msg.p_ac(2)}   V: {msg.v_ac(2)}   I: {msg.i_ac(2)}   F: {msg.f_ac(2)}', file=f)
-            print(f'L3    P: {msg.p_ac(3)}   V: {msg.v_ac(3)}   I: {msg.i_ac(3)}   F: {msg.f_ac(3)}', file=f)
+        if detail_logger.isEnabledFor(logging.DEBUG):
+            detail_logger.debug('Inverter ID: %s', msg.id)
+            detail_logger.debug('E Today : %s  Total: %s', msg.e_today,
+                                ((((msg.e_today * 10) - (int(msg.e_today * 10))) / 10) + msg.e_total))
+            detail_logger.debug('H Total : %s   Temp : %s', msg.h_total, msg.temp)
+            detail_logger.debug('errorMsg: %s', msg.errorMsg)
+            for i in (1, 2, 3):
+                detail_logger.debug('PV%s   V: %s   I: %s', i, msg.v_pv(i), msg.i_pv(i))
+            for i in (1, 2, 3):
+                detail_logger.debug('L%s    P: %s   V: %s   I: %s   F: %s',
+                                    i, msg.p_ac(i), msg.v_ac(i), msg.i_ac(i), msg.f_ac(i))
 
         # sys.stdout.write('Inverter ID: {0}\n'.format(msg.id))
         # sys.stdout.write('E Today : {0:>5}   Total: {1:<5}\n'.format(msg.e_today, (
