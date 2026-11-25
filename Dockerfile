@@ -8,7 +8,7 @@ COPY requirements.txt .
 
 COPY config.cfg .
 COPY *.py ./
-COPY .python_hue .
+# private_info.py en .python_hue worden via docker-compose gemount (zie .dockerignore)
 
 RUN pip install --no-cache-dir -r requirements.txt
 

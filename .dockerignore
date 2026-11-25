@@ -1,0 +1,28 @@
+# Secrets: nooit in de image. Worden via docker-compose als volume gemount.
+.env
+private_info.py
+.python_hue
+docker-compose.yml
+deploy-private-files.command
+
+# Git / editor / OS
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+
+# Python bytecode
+__pycache__
+*.py[cod]
+
+# Logs
+*.log
+logging.txt
+
+# Niet nodig in de container
+import old solar data
+CLAUDE.md
+README.md
+Dockerfile
+.dockerignore
