@@ -1,26 +1,13 @@
-# requests #~=2.24.0
-# influxdb-client
-# phue~=1.1
-
-
-# # six~=1.15.0
-# six>=1.16.0
-# buienradar~=1.0.5
-# pandas
-# openpyxl
-
-
-
+# Dependencies van realtimemonitoring (de Docker-image).
+# Direct gebruikt: buienradar, influxdb-client, phue, requests; de rest zijn hun afhankelijkheden.
+# (six is nodig voor python-dateutil, dat door influxdb-client wordt gebruikt.)
+# Voor het importscript in "import old solar data" zie requirements-import.txt.
 buienradar==1.0.9
 certifi==2026.10.23
 charset-normalizer==3.5.2
 docopt==0.6.2
-et_xmlfile==2.0.0
 idna==3.20
 influxdb-client==1.50.0
-numpy==2.5.4
-openpyxl==3.1.5
-pandas==3.1.0
 phue==1.1
 python-dateutil==3.0.0
 pytz==2026.5

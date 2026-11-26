@@ -1,0 +1,20 @@
+# Grafana-datasource voor InfluxDB 2 (Flux). Wordt bij het starten van Grafana ingelezen.
+# Dezelfde uid als de oorspronkelijk handmatig aangemaakte datasource, zodat Grafana die overneemt
+# en het dashboard blijft werken. Token, org en bucket komen uit omgevingsvariabelen (.env via docker-compose).
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB RP400
+    uid: FcHP1367k
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    isDefault: true
+    editable: false
+    jsonData:
+      version: Flux
+      organization: ${INFLUXDB_ORG}
+      defaultBucket: ${INFLUXDB_BUCKET}
+      httpMode: POST
+    secureJsonData:
+      token: ${INFLUXDB_TOKEN}

@@ -211,6 +211,9 @@ class InverterExport(object):
                     'class': 'logging.FileHandler',
                     'filename': InverterLib.expand_path(config.get('log',
                                                                    'filename')),
+                    # pas openen bij de eerste logregel: bij type = console wordt er geen
+                    # (lege) logfile aangemaakt, en de app-map hoeft niet schrijfbaar te zijn
+                    'delay': True,
                     'formatter': 'f'},
             },
             'loggers': {

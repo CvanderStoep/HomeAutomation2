@@ -21,6 +21,15 @@ The main loop is `realtimemonitoring.py`.
 * Secrets (InfluxDB token, OpenWeatherMap API key, Hue bridge IP) live in `.env`;
   docker-compose passes them to the container as environment variables (see `env_config.py`).
   `.python_hue` is mounted into the container, not baked into the image.
+* `requirements.txt` – dependencies of the Docker image; `requirements-import.txt` adds pandas etc.
+  for the one-off script in `import old solar data/`.
+
+## Grafana
+* The InfluxDB datasource is provisioned from `grafana/provisioning/datasources/influxdb.yml`
+  (token, org and bucket come from `.env`).
+* The dashboard is **not** provisioned: it lives in each Grafana's own database, so the Mac can
+  never overwrite the dashboard on the Pi. `grafana/dashboards/home-automation.json` is a backup
+  exported from the Pi; see `grafana/dashboards/README.md` for updating and restoring it.
 
 ## Logging
 Logs go to stdout: `sudo docker logs -f realtimemonitoring`.
@@ -41,4 +50,4 @@ cd ~/HomeAutomation2
 git pull
 sudo docker compose up --build -d
 ```
-The Grafana dashboard has to be imported manually.
+On a fresh install, import the dashboard backup manually (see `grafana/dashboards/README.md`).
