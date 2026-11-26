@@ -27,9 +27,10 @@ The main loop is `realtimemonitoring.py`.
 ## Grafana
 * The InfluxDB datasource is provisioned from `grafana/provisioning/datasources/influxdb.yml`
   (token, org and bucket come from `.env`).
-* The dashboard is **not** provisioned: it lives in each Grafana's own database, so the Mac can
-  never overwrite the dashboard on the Pi. `grafana/dashboards/home-automation.json` is a backup
-  exported from the Pi; see `grafana/dashboards/README.md` for updating and restoring it.
+* The dashboard is provisioned from `grafana/dashboards/home-automation.json`. That file in git is
+  the single source: the Mac and the Pi both load exactly this version. Saving in the Grafana UI is
+  disabled; to change the dashboard, export it to that file and commit
+  (see `grafana/dashboards/README.md`).
 
 ## Logging
 Logs go to stdout: `sudo docker logs -f realtimemonitoring`.
@@ -50,4 +51,4 @@ cd ~/HomeAutomation2
 git pull
 sudo docker compose up --build -d
 ```
-On a fresh install, import the dashboard backup manually (see `grafana/dashboards/README.md`).
+Datasource and dashboard are created automatically, also on a fresh install.

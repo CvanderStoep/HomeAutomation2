@@ -1,0 +1,17 @@
+# Laadt de dashboards uit grafana/dashboards (in de container: /etc/grafana/dashboards).
+# Het bestand in git is de enige bron: op de Mac en op de Pi laadt Grafana precies deze versie.
+#
+# allowUiUpdates: false -> opslaan in de Grafana-interface kan niet. Een wijziging maak je zo:
+#   aanpassen in Grafana, Export > Export as JSON (klassiek formaat), opslaan als
+#   grafana/dashboards/home-automation.json, committen, en op de Pi: git pull.
+#   Grafana neemt de nieuwe versie binnen een minuut over (updateIntervalSeconds).
+apiVersion: 1
+
+providers:
+  - name: home-automation
+    type: file
+    folder: ''
+    allowUiUpdates: false
+    updateIntervalSeconds: 60
+    options:
+      path: /etc/grafana/dashboards
