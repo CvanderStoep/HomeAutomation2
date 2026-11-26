@@ -5,12 +5,18 @@ zoals het op de Raspberry Pi (productie) staat. Grafana laadt dit bestand **niet
 het dashboard zelf staat in de Grafana-database van elke installatie, zodat de Mac nooit het
 dashboard op de Pi kan overschrijven.
 
-- Formaat: Grafana 13 dashboard v2 (`dashboard.grafana.app/v2`), uid `DtSJnhzgz`.
-- Gemaakt van: Pi, generatie 133 (laatst aangepast 2026-11-18).
+- Formaat: klassiek Grafana-dashboard-JSON (schemaVersion 42), uid `DtSJnhzgz`.
+- Gemaakt van: Pi, versie 134 (opgeslagen 2026-11-26), opgehaald via de Grafana-API.
 
 ## Back-up bijwerken
-Na een wijziging op de Pi: in Grafana op de Pi het dashboard openen, **Export > Export as JSON**,
-opslaan als dit bestand en committen.
+Altijd via Grafana zelf, nooit rechtstreeks uit `grafana.db` (in Grafana 13 kan de oude
+`dashboard`-tabel verouderd zijn). Twee manieren:
+
+- In Grafana op de Pi: dashboard openen, **Export > Export as JSON** (klassiek formaat),
+  opslaan als dit bestand en committen.
+- Via de API (met een Viewer-service-account-token):
+  `GET http://raspberrypi400.local:3000/api/dashboards/uid/DtSJnhzgz` — gebruik het veld
+  `dashboard` uit het antwoord en laat `id` weg.
 
 ## Terugzetten
 In Grafana: **Dashboards > New > Import**, dit bestand uploaden. Het dashboard gebruikt de
