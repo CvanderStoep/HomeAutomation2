@@ -16,7 +16,6 @@ venv/
 # Python bytecode
 __pycache__/
 *.py[cod]
-deploy-private-files.command
 
 # OS / editor / logs
 .DS_Store

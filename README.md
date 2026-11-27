@@ -52,3 +52,21 @@ git pull
 sudo docker compose up --build -d
 ```
 Datasource and dashboard are created automatically, also on a fresh install.
+
+## Backup and restore (InfluxDB, Pi → Mac)
+The Pi is production; the Mac keeps copies and can show the same data in Docker.
+Backups (±1 GB each) are not in git; they go to `../13. Backup scripts` (OneDrive, so also off-site).
+
+* `backup-influx-from-pi.command` – full `influx backup` on the Pi, streamed over ssh into
+  `influx-backup-YYYY-MM-DD`. Every file is checked against the manifest (present, size, gzip).
+  The Pi keeps running.
+* `restore-influx-on-mac.command [influx-backup-YYYY-MM-DD]` – restores the newest backup (or the given one)
+  with `influx restore --full` on the Mac. It makes a safety copy in `~/InfluxDB-veiligheidskopie` first,
+  starts only `influxdb` and `grafana` (not `realtimemonitoring`), and prints the number of points and the
+  last timestamp per measurement. Grafana on the Mac: http://localhost:3000.
+
+Notes:
+* Mac and Pi share the same `.env`, so the admin token is correct after `restore --full`.
+* Don't run heavy queries over the full range (`range(start: 0)`) on the Pi; it runs out of memory.
+  Do such checks on the Mac.
+* Old backups and safety copies are not removed automatically.
