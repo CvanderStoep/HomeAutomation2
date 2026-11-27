@@ -1,0 +1,97 @@
+# see .env file for the secrets
+# Grafana-datasource en -dashboard komen uit ./grafana (provisioning), zie README.
+name: home-automation
+
+services:
+  influxdb:
+    networks:
+      - ha_network
+    image: influxdb:2.9.1 #2.2.0  # can use tag latest
+    container_name: influxdb
+    restart: always
+    ports:
+      - '8086:8086'
+    volumes:
+      - influxdb-storage:/var/lib/influxdb2
+      - influxdb.conf:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=$DOCKER_INFLUXDB_INIT_MODE
+      - DOCKER_INFLUXDB_INIT_USERNAME=$DOCKER_INFLUXDB_INIT_USERNAME
+      - DOCKER_INFLUXDB_INIT_PASSWORD=$DOCKER_INFLUXDB_INIT_PASSWORD
+      - DOCKER_INFLUXDB_INIT_ORG=$DOCKER_INFLUXDB_INIT_ORG
+      - DOCKER_INFLUXDB_INIT_BUCKET=$DOCKER_INFLUXDB_INIT_BUCKET
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+    healthcheck:
+      # 'healthy' zodra InfluxDB verzoeken accepteert; andere services wachten daarop
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  realtimemonitoring:
+    container_name: "realtimemonitoring"
+    networks:
+      - ha_network
+    restart: always
+    build: .
+    volumes:
+      - ./.python_hue:/usr/src/app/.python_hue
+    environment:
+      # DEBUG toont ook alle meetwaarden; INFO alleen één regel per meetronde en fouten
+      - LOG_LEVEL=INFO
+      # Secrets uit .env; alleen wat realtimemonitoring nodig heeft (zie env_config.py)
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+      - INFLUXDB_ORG=$DOCKER_INFLUXDB_INIT_ORG
+      - INFLUXDB_BUCKET=$DOCKER_INFLUXDB_INIT_BUCKET
+      - OPENWEATHERMAP_API_KEY=$OPENWEATHERMAP_API_KEY
+      - HUE_BRIDGE_IP=$HUE_BRIDGE_IP
+    logging:
+      # docker logs begrenzen tot max. 3 x 10 MB
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      influxdb:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:13.2.4 #12.4.13 #11.6.15 #10.4.19 #9.5.21 #8.4.3
+    container_name: grafana
+    restart: always
+    networks:
+      - ha_network
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      # provisioning (read-only): datasource en dashboard uit het repo. Het dashboard-bestand in git
+      # is de enige bron; opslaan in de Grafana-interface staat uit (zie grafana/dashboards/README.md).
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/dashboards:/etc/grafana/dashboards:ro
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      # gebruikt in grafana/provisioning/datasources/influxdb.yml
+      - INFLUXDB_TOKEN=$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN
+      - INFLUXDB_ORG=$DOCKER_INFLUXDB_INIT_ORG
+      - INFLUXDB_BUCKET=$DOCKER_INFLUXDB_INIT_BUCKET
+      - GF_SMTP_ENABLED=$GF_SMTP_ENABLED
+      - GF_SMTP_HOST=$GF_SMTP_HOST
+      - GF_SMTP_USER=$GF_SMTP_USER
+      - GF_SMTP_FROM_ADDRESS=$GF_SMTP_FROM_ADDRESS
+      - GF_SMTP_PASSWORD=$GF_SMTP_PASSWORD
+
+volumes:
+  influxdb-storage:
+  influxdb.conf:
+  grafana-storage:
+
+networks:
+  ha_network:
+    external: true
+    name: ha_network
