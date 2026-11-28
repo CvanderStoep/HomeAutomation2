@@ -55,7 +55,7 @@ Datasource and dashboard are created automatically, also on a fresh install.
 
 ## Backup and restore (InfluxDB, Pi → Mac)
 The Pi is production; the Mac keeps copies and can show the same data in Docker.
-Backups (±1 GB each) are not in git; they go to `~/Library/CloudStorage/OneDrive-Persoonlijk/Documenten/13. Backup scripts` (OneDrive, so also off-site).
+Backups (±1 GB each) are not in git; they go to `~/Library/CloudStorage/OneDrive-Persoonlijk/Backups/Pi/influxdb` (OneDrive, so also off-site).
 
 * `backup-influx-from-pi.command` – full `influx backup` on the Pi, streamed over ssh into
   `influx-backup-YYYY-MM-DD`. Every file is checked against the manifest (present, size, gzip).
