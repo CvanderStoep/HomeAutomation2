@@ -20,7 +20,7 @@ set -o pipefail
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 project_dir="$script_dir"
 # De backups (±1 GB per stuk) staan bewust buiten git, in OneDrive.
-backup_dir="$script_dir/../13. Backup scripts"
+backup_dir="$HOME/Library/CloudStorage/OneDrive-Persoonlijk/Documenten/13. Backup scripts"
 safety_root="$HOME/InfluxDB-veiligheidskopie"
 
 restore_started=""

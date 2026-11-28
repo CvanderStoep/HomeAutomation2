@@ -22,7 +22,7 @@ ssh_opts="-o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=
 # Map waarin dit script staat (het project) en de map waar de backups komen.
 # De backups (±1 GB per stuk) staan bewust buiten git, in OneDrive.
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-backup_dir="$script_dir/../13. Backup scripts"
+backup_dir="$HOME/Library/CloudStorage/OneDrive-Persoonlijk/Documenten/13. Backup scripts"
 
 partial=""
 target=""
