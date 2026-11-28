@@ -10,7 +10,7 @@ set -u
 
 # SSH-adres van de Pi en de projectmap daarop (daar staat ook de git-clone).
 target="pi@raspberrypi400.local"
-remote_dir="/home/pi/HomeAutomation2"
+remote_dir="/home/pi/monitoring"
 
 # Map waarin dit script staat, zodat het werkt ongeacht vanuit welke map je het start.
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

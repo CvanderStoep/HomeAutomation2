@@ -40,14 +40,14 @@ Set `LOG_LEVEL=DEBUG` in `docker-compose.yml` to also log all measured values.
 ```sh
 sudo apt-get update -y
 sudo apt install docker.io docker-compose -y
-git clone https://github.com/CvanderStoep/HomeAutomation2
+git clone https://github.com/CvanderStoep/monitoring
 docker network create ha_network     # the shared network must exist
 ```
 Then run `deploy-private-files.command` on the Mac to copy the private files.
 
 ## Start / update
 ```sh
-cd ~/HomeAutomation2
+cd ~/monitoring
 git pull
 sudo docker compose up --build -d
 ```
