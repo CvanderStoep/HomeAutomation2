@@ -70,3 +70,5 @@ Notes:
 * Don't run heavy queries over the full range (`range(start: 0)`) on the Pi; it runs out of memory.
   Do such checks on the Mac.
 * Old backups and safety copies are not removed automatically.
+* **Rule: there is always at least one InfluxDB backup in `Backups/Pi/influxdb`.** Only delete an old backup once a
+  newer (successful) one exists, and never delete the last one.
